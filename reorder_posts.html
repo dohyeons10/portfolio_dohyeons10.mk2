@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="styles.css">
+    <title>글 순서 변경</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="firebase_config.js"></script>
+    <script src="admin_key.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        if (sessionStorage.getItem('isAdmin') !== 'true') {
+            alert('관리자만 접근할 수 있습니다.');
+            window.location.href = 'index.html';
+        }
+    </script>
+    <style>
+        .post-item { cursor: grab; display: flex; align-items: center; }
+        .post-item.dragging { opacity: 0.5; background: #f8f9fa; border: 2px dashed #007BFF; }
+        .drag-handle { margin-right: 15px; font-size: 1.5em; cursor: grab; color: #888; }
+    </style>
+</head>
+<body>
+    <a href="#" class="back-button" id="back-btn">이전으로</a>
+    <div class="container">
+        <h1 id="page-title">글 순서 변경</h1>
+        <p>드래그 앤 드롭으로 순서를 변경하세요.</p>
+        
+        <div id="board-list" class="board-list"></div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const category = urlParams.get('category');
+        const boardList = document.getElementById('board-list');
+        const backBtn = document.getElementById('back-btn');
+        const pageTitle = document.getElementById('page-title');
+
+        if (!category) {
+            alert('잘못된 접근입니다.');
+            window.location.href = 'portfolio_board_management.html';
+        }
+
+        pageTitle.innerText = `${category} 글 순서 변경`;
+
+        // 이전으로 버튼 링크 설정
+        if (category === '수상') {
+            backBtn.href = 'manage_awards_board.html';
+        } else if (category === '자격증') {
+            backBtn.href = 'manage_certifications_board.html';
+        } else if (category === '대외활동') {
+            backBtn.href = 'manage_activities_board.html';
+        } else {
+            backBtn.href = 'portfolio_board_management.html';
+        }
+
+        db.ref('posts').on('value', (snapshot) => {
+            const data = snapshot.val();
+            boardList.innerHTML = '';
+            
+            if (!data) return;
+
+            const posts = [];
+            Object.keys(data).forEach(key => {
+                if (data[key].category === category) {
+                    posts.push({ id: key, ...data[key] });
+                }
+            });
+
+            // 정렬: order 필드 기준 오름차순
+            posts.sort((a, b) => {
+                const orderA = a.order !== undefined ? a.order : Number.MAX_SAFE_INTEGER;
+                const orderB = b.order !== undefined ? b.order : Number.MAX_SAFE_INTEGER;
+                if (orderA !== orderB) return orderA - orderB;
+                return b.id.localeCompare(a.id);
+            });
+
+            posts.forEach(post => {
+                const postItem = document.createElement('div');
+                postItem.className = 'post-item';
+                postItem.draggable = true;
+                postItem.dataset.id = post.id;
+                postItem.innerHTML = `
+                    <span class="drag-handle">☰</span>
+                    <h3 style="margin: 0;">${post.title}</h3>
+                `;
+                
+                postItem.addEventListener('dragstart', () => postItem.classList.add('dragging'));
+                postItem.addEventListener('dragend', () => {
+                    postItem.classList.remove('dragging');
+                    saveOrder();
+                });
+
+                boardList.appendChild(postItem);
+            });
+        });
+
+        boardList.addEventListener('dragover', e => {
+            e.preventDefault();
+            const afterElement = getDragAfterElement(boardList, e.clientY);
+            const draggable = document.querySelector('.dragging');
+            if (afterElement == null) {
+                boardList.appendChild(draggable);
+            } else {
+                boardList.insertBefore(draggable, afterElement);
+            }
+        });
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.post-item:not(.dragging)')];
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        function saveOrder() {
+            const items = boardList.querySelectorAll('.post-item');
+            items.forEach((item, index) => {
+                db.ref('posts/' + item.dataset.id).update({ order: index });
+            });
+        }
+    </script>
+</body>
+</html>

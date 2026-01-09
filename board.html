@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<a href="blog.html" class="back-button">이전으로</a>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="firebase_config.js"></script>
+    <script src="admin_key.js"></script>
+    <script src="auth.js"></script>
+    <title>게시판</title>
+</head>
+<body>
+    <div class="container">
+        <h1>게시판 목록</h1>
+
+        <div style="text-align: right; margin-bottom: 10px;">
+            <select id="category-filter" onchange="filterPosts()" style="padding: 5px; border-radius: 4px; border: 1px solid #ddd;">
+                <option value="all">전체보기</option>
+            </select>
+        </div>
+        
+        <div id="board-list" class="board-list">
+            <!-- 자바스크립트로 게시글이 여기에 추가됩니다 -->
+        </div>
+        <div id="pagination" class="pagination"></div>
+
+        <div style="margin-top: 20px;">
+            <a href="write.html" class="write-button">글쓰기</a>
+        </div>
+    </div>
+
+    <script>
+        let posts = []; // Firebase에서 불러온 데이터를 저장할 배열
+        const boardList = document.getElementById('board-list');
+        const paginationContainer = document.getElementById('pagination');
+        const itemsPerPage = 5; // 한 페이지당 보여줄 글 개수
+        let currentPage = 1;
+        let currentFilter = 'all';
+
+        // 말머리 필터 목록 불러오기
+        const categoryFilter = document.getElementById('category-filter');
+        const defaultCategories = ['정보', '일상', '잡담', '질문', '후기', '체험단'];
+        
+        // 카테고리 불러오기 (Firebase)
+        db.ref('post_categories').on('value', (snapshot) => {
+            const categories = snapshot.val() || defaultCategories;
+            categoryFilter.innerHTML = '<option value="all">전체보기</option>'; // 초기화
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.innerText = cat;
+                categoryFilter.appendChild(option);
+            });
+        });
+
+        // 게시글 불러오기 (Firebase)
+        db.ref('posts').on('value', (snapshot) => {
+            const data = snapshot.val();
+            posts = [];
+            if (data) {
+                // 객체를 배열로 변환 (ID 포함)
+                Object.keys(data).forEach(key => {
+                    posts.push({ id: key, ...data[key] });
+                });
+            }
+            renderBoard(currentPage);
+        });
+
+        // 글 삭제 함수
+        function deletePost(event, id, password) {
+            event.stopPropagation(); // 상세 페이지 이동 막기
+            
+            const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+
+            if (isAdmin) {
+                if (confirm('정말 삭제하시겠습니까?')) {
+                    db.ref('posts/' + id).remove();
+                    alert('삭제되었습니다.');
+                }
+            } else {
+                const inputPassword = prompt('글 비밀번호를 입력하세요:');
+                if (password === inputPassword) {
+                    if (confirm('정말 삭제하시겠습니까?')) {
+                        db.ref('posts/' + id).remove();
+                        alert('삭제되었습니다.');
+                    }
+                } else if (inputPassword !== null) {
+                    alert('비밀번호가 일치하지 않습니다.');
+                }
+            }
+        }
+
+        function filterPosts() {
+            currentFilter = document.getElementById('category-filter').value;
+            currentPage = 1; // 필터 변경 시 1페이지로 초기화
+            renderBoard(currentPage);
+        }
+
+        function renderBoard(page) {
+            boardList.innerHTML = '';
+            
+            const filteredPosts = posts.filter(post => {
+                if (post.category === '수상') return false; // 수상 내용은 별도 게시판에서 관리
+                if (post.category === '자격증') return false; // 자격증 내용은 별도 게시판에서 관리
+                if (post.category === '대외활동') return false; // 대외활동 내용은 별도 게시판에서 관리
+                if (currentFilter === 'all') return true;
+                return post.category === currentFilter;
+            });
+
+            if (filteredPosts.length === 0) {
+                boardList.innerHTML = '<p>등록된 글이 없습니다.</p>';
+                paginationContainer.innerHTML = '';
+                return;
+            }
+
+            // 역순 정렬 (최신글 위로)
+            const reversedPosts = filteredPosts.reverse();
+
+            // 페이지네이션 슬라이싱
+            const startIndex = (page - 1) * itemsPerPage;
+            const pagedPosts = reversedPosts.slice(startIndex, startIndex + itemsPerPage);
+
+            pagedPosts.forEach(post => {
+                // 댓글 개수 계산 (객체이므로 키 개수 확인)
+                const commentCount = post.comments ? Object.keys(post.comments).length : 0;
+                const categoryLabel = post.category ? `[${post.category}]` : '[일반]';
+                
+                const postItem = document.createElement('div');
+                postItem.className = 'post-item';
+                postItem.onclick = function() {
+                    window.location.href = `view.html?id=${post.id}`;
+                };
+                postItem.innerHTML = `
+                    <h3><span style="color: #007BFF; font-size: 0.8em; margin-right: 5px;">${categoryLabel}</span>${post.title} <span class="comment-count">[${commentCount}]</span></h3>
+                    <div class="post-meta">
+                        <span class="post-date">${post.date}</span>
+                        <button class="delete-button" onclick="deletePost(event, '${post.id}', '${post.password}')">삭제</button>
+                    </div>
+                `;
+                boardList.appendChild(postItem);
+            });
+            
+            renderPagination(filteredPosts.length);
+        }
+
+        function renderPagination(totalItems) {
+            paginationContainer.innerHTML = '';
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            
+            if (totalPages <= 1) return; // 페이지가 1개 이하면 버튼 표시 안 함
+
+            for (let i = 1; i <= totalPages; i++) {
+                const pageLink = document.createElement('button');
+                pageLink.innerText = i;
+                pageLink.className = 'page-link';
+                if (i === currentPage) {
+                    pageLink.classList.add('active');
+                }
+                pageLink.onclick = function() {
+                    currentPage = i;
+                    renderBoard(currentPage);
+                };
+                paginationContainer.appendChild(pageLink);
+            }
+        }
+    </script>
+</body>
+</html>

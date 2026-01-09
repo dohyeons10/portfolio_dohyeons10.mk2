@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="styles.css">
+    <title>포트폴리오 게시판 관리</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="firebase_config.js"></script>
+    <script src="admin_key.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        // 관리자 권한 확인
+        if (sessionStorage.getItem('isAdmin') !== 'true') {
+            alert('관리자만 접근할 수 있습니다.');
+            window.location.href = 'index.html';
+        }
+    </script>
+</head>
+<body>
+    <a href="profile.html" class="back-button">이전으로</a>
+    <div class="container">
+        <h1>포트폴리오 게시판 관리</h1>
+        <p>포트폴리오 관련 게시판을 관리하는 페이지입니다.</p>
+        
+        <div class="menu-grid">
+            <a href="manage_awards_board.html" class="menu-card">
+                <div class="icon">🏆</div>
+                <h2>수상 게시판 관리</h2>
+                <p>수상 내역 게시글 관리</p>
+            </a>
+            <a href="manage_certifications_board.html" class="menu-card">
+                <div class="icon">📜</div>
+                <h2>자격증 게시판 관리</h2>
+                <p>자격증 내역 게시글 관리</p>
+            </a>
+            <a href="manage_activities_board.html" class="menu-card">
+                <div class="icon">🤝</div>
+                <h2>대외활동 게시판 관리</h2>
+                <p>대외활동 내역 게시글 관리</p>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

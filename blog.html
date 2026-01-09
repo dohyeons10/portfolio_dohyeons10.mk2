@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <title>블로그 메뉴</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="firebase_config.js"></script>
+    <script src="admin_key.js"></script>
+    <script src="auth.js"></script>
+</head>
+<body>
+    <a href="index.html" class="back-button">이전으로</a>
+    <div class="container">
+        <header class="main-header">
+            <h1>블로그</h1>
+            <p>자유롭게 글을 쓰고 공유하는 공간</p>
+        </header>
+        
+        <div class="menu-grid">
+            <a href="write.html" class="menu-card">
+                <div class="icon">✏️</div>
+                <h2>글쓰기</h2>
+                <p>오늘의 생각을 기록해보세요</p>
+            </a>
+            <a href="board.html" class="menu-card">
+                <div class="icon">📋</div>
+                <h2>게시판</h2>
+                <p>작성한 글들을 모아보세요</p>
+            </a>
+            <a href="gallery.html" class="menu-card">
+                <div class="icon">📷</div>
+                <h2>사진첩</h2>
+                <p>추억을 사진으로 남겨보세요</p>
+            </a>
+            <a href="manage_blog.html" class="menu-card" id="manage-blog-btn" style="display: none;">
+                <div class="icon">⚙️</div>
+                <h2>블로그 관리</h2>
+                <p>블로그 설정 및 관리</p>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // 관리자일 경우에만 블로그 관리 메뉴 표시
+        if (sessionStorage.getItem('isAdmin') === 'true') {
+            document.getElementById('manage-blog-btn').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

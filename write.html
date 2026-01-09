@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang = "ko">
+<a href = "blog.html" class = "back-button">이전으로</a>
+
+<head>
+    <meta charset = "UTF-8">
+    <link rel="stylesheet" href="styles.css">
+    <title>글쓰기</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="firebase_config.js"></script>
+    <script src="admin_key.js"></script>
+    <script src="auth.js"></script>
+</head>
+
+<body>
+    <h1>새 글 작성하기</h1>
+
+    <form id="write-form">
+        <label for="post-category">말머리:</label><br>
+        <select id="post-category" name="post-category" style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px;">
+        </select><br><br>
+
+        <label for = "post-title">제목:</label><br>
+        <input type = "text" id = "post-title" name = "post-title"><br><br>
+
+        <label for = "post-content">내용:</label><br>
+        <textarea id = "post-content" name = "post-content" rows = "10" cols = "50"></textarea><br><br>
+
+        <label for="post-password">비밀번호:</label><br>
+        <input type="password" id="post-password" name="post-password" placeholder="삭제 시 필요합니다"><br><br>
+
+        <button type = "submit">글 올리기</button>
+    </form>
+
+    <script>
+        // 말머리 목록 불러오기
+        const categorySelect = document.getElementById('post-category');
+        const defaultCategories = ['정보', '일상', '잡담', '질문', '후기', '체험단'];
+        
+        db.ref('post_categories').once('value').then((snapshot) => {
+            const categories = snapshot.val() || defaultCategories;
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.innerText = cat;
+                categorySelect.appendChild(option);
+            });
+        });
+
+        document.getElementById('write-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // 폼의 기본 제출 동작 막기
+            
+            const category = document.getElementById('post-category').value;
+            const title = document.getElementById('post-title').value;
+            const content = document.getElementById('post-content').value;
+            const password = document.getElementById('post-password').value;
+            const date = new Date().toLocaleDateString(); // 현재 날짜
+
+            if (title && content && password) {
+                db.ref('posts').push({
+                    category: category,
+                    title: title,
+                    content: content,
+                    password: password,
+                    date: date
+                }).then(() => {
+                    alert('글이 등록되었습니다.');
+                    window.location.href = 'board.html'; // 게시판으로 이동
+                });
+            } else {
+                alert('제목, 내용, 비밀번호를 모두 입력해주세요.');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>박도현 | 포트폴리오</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="firebase_config.js"></script>
+    <script src="admin_key.js"></script>
+    <script src="auth.js"></script>
+</head>
+<body>
+    <a href="index.html" class="back-button">이전으로</a>
+    <main class="container" id="main-content">
+        <!-- 기본 정적 콘텐츠 (데이터 로딩 전 또는 데이터 없을 때 표시) -->
+        <section id="profile-section">
+            <div class="profile-header">
+                <img src="profile_image.jpg" alt="박도현 프로필 사진" class="profile-img">
+                <div>
+                    <h1>박도현 | Park Do-hyeon</h1>
+                    <div class="contact-info">
+                        <p>경상남도 거제시</p>
+                        <p>010-5807-1643</p>
+                        <p>dohyeon0225@naver.com</p>
+                        <p>dohyeons10@gnu.ac.kr</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <hr>
+
+        <section id="about">
+            <h2>소개</h2>
+            <p><strong>기계 및 반도체 공학</strong>을 전공하며 기술 발전의 핵심 원리를 탐구하고, <br><strong>지식재산학</strong>을 통해 혁신 기술을 보호하는 방법을 배우며 미래 기술 전문가로 성장하고 있습니다.</br></p>
+        </section>
+
+        <hr>
+
+        <section id="goals">
+            <h2>목표</h2>
+            <p><strong>[ 기술의 탄생과 가치 보호를 잇는 '융합형 인재' ]</strong></p>
+            <p>중학교 발명영재 과정에서 시작된 공학적 호기심을, 대학에서의 전공 심화 학습을 통해 전문적인 IP 역량으로 확장하고 있습니다. 이를 바탕으로 혁신적인 아이디어를 현실로 구현하는 기술적 시각과, 그 가치를 독점적 권리로 확보하는 법적 시각을 모두 갖춘 전문가로 성장하고자 합니다. 단순한 기술 개발을 넘어, 연구개발의 노력이 정당한 권리로 인정받는 기술 생태계를 만드는 데 기여하겠습니다.</p>
+        </section>
+
+        <hr>
+
+        <section id="education">
+            <h2>학력</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>기간</th>
+                        <th>학교 및 전공</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2018.03 ~ 2021.02</td>
+                        <td>거제중학교 졸업</td>
+                    </tr>
+                    <tr>
+                        <td>2019.03 ~ 2019.12</td>
+                        <td>경상남도융합과학영재교육원 발명영재 과정 수료</td>
+                    </tr>
+                    <tr>
+                        <td>2020.03 ~ 2020.12</td>
+                        <td>경상남도과학영재교육원 과학발명과정 수료</td>
+                    </tr>
+                    <tr>
+                        <td>2021.03 ~ 2024.02</td>
+                        <td>거제옥포고등학교 졸업</td>
+                    </tr>
+                    <tr>
+                        <td>2024.03 ~</td>
+                        <td>경상국립대학교 기계공학부 기계공학전공</td>
+                    </tr>
+                    <tr>
+                        <td>2025.09 ~</td>
+                        <td>경상국립대학교 지식재산학 복수전공</td>
+                    </tr>
+                    <tr>
+                        <td>2025.09 ~</td>
+                        <td>경상국립대학교 반도체공학 부전공</td>
+                    </tr>
+                    <tr>
+                        <td>2025.09 ~</td>
+                        <td>경상국립대학교 미래차기계설계및생산 마이크로디그리 이수 중</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <hr>
+
+        <section id="awards">
+            <h2>수상 내용 <a href="awards_board.html" class="write-button" style="font-size: 0.5em; padding: 5px 10px; vertical-align: middle; margin-left: 10px; text-decoration: none; color: white;">상세</a></h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>기간</th>
+                        <th>수상 내용</th>
+                        <th>구분</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2019.10.30</td>
+                        <td>발명한마당 큰잔치 산출물 전시 마당 창의인재상</td>
+                        <td>경상남도교육청 과학교육원</td>
+                    </tr>
+                    <tr>
+                        <td>2022.08.</td>
+                        <td>경남과학전람회 장려상</td>
+                        <td>경상남도교육청</td>
+                    </tr>
+                    <tr>
+                        <td>2022.10.</td>
+                        <td>전국청소년교통안전표지인식인공지능경진대회 우수상</td>
+                        <td>한라대학교 산학협력단</td>
+                    </tr>
+                    <tr>
+                        <td>2023.01.</td>
+                        <td>전국고교자율주행경진대회 장려상 <br>(지역 최우수상)</br></td>
+                        <td>미래차전환부품사업단<br>(지역: 경성대학교 LINC 3.0 사업단)</br></td>
+                    </tr>
+                    <tr>
+                        <td>2025.11.28.</td>
+                        <td>제조 빅데이터 분석 경진대회 장려상</td>
+                        <td>경상국립대학교 빅데이터 혁신융합대학 사업단</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <hr>
+
+        <section id="certifications">
+            <h2>자격 취득 내용 <a href="certifications_board.html" class="write-button" style="font-size: 0.5em; padding: 5px 10px; vertical-align: middle; margin-left: 10px; text-decoration: none; color: white;">상세</a></h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>기간</th>
+                        <th>자격 내용</th>
+                        <th>발급 기관</th>
+                        <th>구분</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2025.12.03.</td>
+                        <td>AI경영분석사(AIB)</td>
+                        <td>한국기업기술가치평가협회</td>
+                        <td>등록민간</td>
+                    </tr>
+                    <tr>
+                        <td>2025.12.04.</td>
+                        <td>지식재산능력시험(6급, 447점)</td>
+                        <td>한국발명진흥회</td>
+                        <td>등록민간</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <hr>
+
+        <section id="activities">
+            <h2>대외활동 내용 <a href="activities_board.html" class="write-button" style="font-size: 0.5em; padding: 5px 10px; vertical-align: middle; margin-left: 10px; text-decoration: none; color: white;">상세</a></h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>기간</th>
+                        <th>자격 내용</th>
+                        <th>구분</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2022.09. ~ 2022.11.</td>
+                        <td>갤럭시 고등 리더</td>
+                        <td>삼성전자</td>
+                    </tr>
+                    <tr>
+                        <td>2025.10</td>
+                        <td>청소년 SW 동행 프로젝트 멘토링</td>
+                        <td>한국과학창의재단</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <hr>
+
+        <section id="skills">
+            <h2>스킬</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>구분</th>
+                        <th>내용</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>캐드</td>
+                        <td>AutoCAD, Tinkercad, Fusion360</td>
+                    </tr>
+                    <tr>
+                        <td>특허검색</td>
+                        <td>Kipris, WIPS On</td>
+                    </tr>
+                    <tr>
+                        <td>코딩</td>
+                        <td>C / C++, Python</td>
+                    </tr>
+                    <tr>
+                        <td>피지컬 컴퓨팅</td>
+                        <td>아두이노, 라즈베리파이, 마이크로비트</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 박도현. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // 관리자 권한 확인 및 수정 버튼 표시
+        if (sessionStorage.getItem('isAdmin') === 'true') {
+            const editBtn = document.createElement('a');
+            editBtn.href = 'edit_profile.html';
+            editBtn.style.position = 'absolute';
+            editBtn.style.top = '10px';
+            editBtn.style.right = '110px';
+            editBtn.style.zIndex = '999999';
+            editBtn.style.padding = '8px 12px';
+            editBtn.style.border = 'none';
+            editBtn.style.borderRadius = '4px';
+            editBtn.style.cursor = 'pointer';
+            editBtn.style.fontWeight = 'bold';
+            editBtn.style.fontFamily = 'sans-serif';
+            editBtn.style.fontSize = '12px';
+            editBtn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+            editBtn.style.color = 'white';
+            editBtn.style.backgroundColor = '#007BFF';
+            editBtn.style.textDecoration = 'none';
+            editBtn.style.transition = 'transform 0.2s, box-shadow 0.2s';
+
+            editBtn.onmouseover = function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+            };
+            editBtn.onmouseout = function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+            };
+
+            editBtn.innerText = '프로필 수정';
+            document.body.appendChild(editBtn);
+        }
+
+        // Firebase에서 프로필 데이터 불러오기
+        db.ref('profile').on('value', snapshot => {
+            const data = snapshot.val();
+            if (data) {
+                renderProfile(data);
+            }
+        });
+
+        function renderProfile(data) {
+            const main = document.getElementById('main-content');
+            let html = '';
+
+            // 프로필 헤더
+            html += `<section id="profile-section">
+                <div class="profile-header">
+                    <img src="${data.image || 'profile_image.jpg'}" alt="프로필 사진" class="profile-img">
+                    <div>
+                        <h1>${data.name}</h1>
+                        <div class="contact-info">
+                            ${data.contact.map(c => `<p>${c}</p>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            </section><hr>`;
+
+            // 소개
+            html += `<section id="about">
+                <h2>소개</h2>
+                <p>${data.about}</p>
+            </section><hr>`;
+
+            // 목표
+            html += `<section id="goals">
+                <h2>목표</h2>
+                <p>${data.goals}</p>
+            </section><hr>`;
+
+            // 테이블 렌더링 헬퍼 함수
+            const renderTable = (id, title, headers, rows) => {
+                if (!rows || rows.length === 0) return '';
+                const headerHtml = headers.map(h => `<th>${h}</th>`).join('');
+                const rowsHtml = rows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('');
+                return `<section id="${id}">
+                    <h2>${title}</h2>
+                    <table><thead><tr>${headerHtml}</tr></thead><tbody>${rowsHtml}</tbody></table>
+                </section><hr>`;
+            };
+
+            html += renderTable('education', '학력', ['기간', '학교 및 전공'], data.education);
+            html += renderTable('awards', '수상 내용 <a href="awards_board_write.html" class="write-button" style="font-size: 0.5em; padding: 5px 10px; vertical-align: middle; margin-left: 10px; text-decoration: none; color: white;">상세</a>', ['기간', '수상 내용', '구분'], data.awards);
+            html += renderTable('certifications', '자격 취득 내용 <a href="certifications_board.html" class="write-button" style="font-size: 0.5em; padding: 5px 10px; vertical-align: middle; margin-left: 10px; text-decoration: none; color: white;">상세</a>', ['기간', '자격 내용', '발급 기관', '구분'], data.certifications);
+            html += renderTable('activities', '대외활동 내용 <a href="activities_board.html" class="write-button" style="font-size: 0.5em; padding: 5px 10px; vertical-align: middle; margin-left: 10px; text-decoration: none; color: white;">상세</a>', ['기간', '활동 내용', '구분'], data.activities);
+            html += renderTable('skills', '스킬', ['구분', '내용'], data.skills);
+
+            // 마지막 hr 제거 및 적용
+            if (html.endsWith('<hr>')) html = html.slice(0, -4);
+            main.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

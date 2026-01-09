@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="styles.css">
+    <title>사진 설명 수정하기</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="firebase_config.js"></script>
+    <script src="admin_key.js"></script>
+    <script src="auth.js"></script>
+</head>
+<body>
+    <a href="gallery.html" class="back-button">목록으로</a>
+    
+    <h1>사진 설명 수정하기</h1>
+
+    <div style="text-align: center; margin-bottom: 20px;">
+        <img id="preview-image" src="" alt="사진 미리보기" style="max-width: 300px; border-radius: 8px;">
+    </div>
+
+    <form id="edit-photo-form">
+        <label for="photo-caption">설명:</label><br>
+        <input type="text" id="photo-caption" name="photo-caption"><br><br>
+
+        <button type="submit">수정 완료</button>
+    </form>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');
+        let photo = null;
+
+        db.ref('photos/' + id).once('value').then((snapshot) => {
+            photo = snapshot.val();
+            if (!photo) {
+                alert('존재하지 않는 사진입니다.');
+                window.location.href = 'gallery.html';
+                return;
+            }
+
+            const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+
+            if (isAdmin) {
+                document.getElementById('photo-caption').value = photo.caption;
+                document.getElementById('preview-image').src = photo.image;
+            } else {
+                const inputPassword = prompt('사진 비밀번호를 입력하세요:');
+                if (photo.password === inputPassword) {
+                    document.getElementById('photo-caption').value = photo.caption;
+                    document.getElementById('preview-image').src = photo.image;
+                } else {
+                    alert('비밀번호가 일치하지 않습니다.');
+                    window.location.href = `photo_view.html?id=${id}`;
+                }
+            }
+        });
+
+        document.getElementById('edit-photo-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const caption = document.getElementById('photo-caption').value;
+
+            db.ref('photos/' + id).update({ caption: caption });
+            
+            alert('수정되었습니다.');
+            window.location.href = `photo_view.html?id=${id}`;
+        });
+    </script>
+</body>
+</html>

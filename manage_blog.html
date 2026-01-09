@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <title>블로그 관리</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="firebase_config.js"></script>
+    <script src="admin_key.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        // 관리자 권한 확인
+        if (sessionStorage.getItem('isAdmin') !== 'true') {
+            alert('관리자만 접근할 수 있습니다.');
+            window.location.href = 'blog.html';
+        }
+    </script>
+</head>
+<body>
+    <a href="blog.html" class="back-button">이전으로</a>
+    <div class="container">
+        <header class="main-header">
+            <h1>블로그 관리</h1>
+            <p>관리자 전용 메뉴입니다</p>
+        </header>
+        
+        <div class="menu-grid">
+            <a href="manage_categories.html" class="menu-card">
+                <div class="icon">🏷️</div>
+                <h2>말머리 관리</h2>
+                <p>게시글 카테고리 설정</p>
+            </a>
+            <a href="find_password.html" class="menu-card">
+                <div class="icon">🔑</div>
+                <h2>비밀번호 찾기</h2>
+                <p>게시글 및 댓글 비밀번호 확인</p>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

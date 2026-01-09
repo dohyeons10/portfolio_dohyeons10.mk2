@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="styles.css">
+    <title>프로필 수정</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="firebase_config.js"></script>
+    <script src="admin_key.js"></script>
+    <script src="auth.js"></script>
+    <style>
+        .form-section { margin-bottom: 30px; border: 1px solid #ddd; padding: 15px; border-radius: 8px; }
+        .form-section h3 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .row-item { display: flex; gap: 10px; margin-bottom: 10px; }
+        .row-item input { flex: 1; }
+        .remove-btn { background-color: #dc3545; padding: 5px 10px; margin: 0; }
+        .add-btn { background-color: #28a745; padding: 5px 10px; margin-top: 5px; font-size: 0.9em; }
+        textarea { height: 100px; }
+    </style>
+</head>
+<body>
+    <a href="profile.html" class="back-button">취소</a>
+    <div class="container">
+        <h1>프로필 수정</h1>
+        <form id="profile-form">
+            <!-- 기본 정보 -->
+            <div class="form-section">
+                <h3>기본 정보</h3>
+                <label>이름:</label>
+                <input type="text" id="p-name"><br><br>
+                
+                <label>프로필 사진:</label>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <img id="preview-img" src="" style="width: 100px; height: 100px; object-fit: cover; border: 1px solid #ddd;">
+                    <input type="file" id="p-image-file" accept="image/*">
+                    <input type="hidden" id="p-image-base64">
+                </div><br>
+
+                <label>연락처 (한 줄에 하나씩):</label>
+                <div id="contact-list"></div>
+                <button type="button" class="add-btn" onclick="addInput('contact-list')">추가</button>
+            </div>
+
+            <!-- 소개 및 목표 -->
+            <div class="form-section">
+                <h3>소개 및 목표 (HTML 태그 사용 가능)</h3>
+                <label>소개:</label>
+                <textarea id="p-about"></textarea><br><br>
+                <label>목표:</label>
+                <textarea id="p-goals"></textarea>
+            </div>
+
+            <!-- 학력 -->
+            <div class="form-section">
+                <h3>학력 (기간 | 학교 및 전공)</h3>
+                <div id="education-list"></div>
+                <button type="button" class="add-btn" onclick="addRow('education-list', 2)">추가</button>
+            </div>
+
+            <!-- 수상 -->
+            <div class="form-section">
+                <h3>수상 (기간 | 내용 | 구분)</h3>
+                <div id="awards-list"></div>
+                <button type="button" class="add-btn" onclick="addRow('awards-list', 3)">추가</button>
+            </div>
+
+            <!-- 자격증 -->
+            <div class="form-section">
+                <h3>자격증 (기간 | 내용 | 기관 | 구분)</h3>
+                <div id="certifications-list"></div>
+                <button type="button" class="add-btn" onclick="addRow('certifications-list', 4)">추가</button>
+            </div>
+
+            <!-- 대외활동 -->
+            <div class="form-section">
+                <h3>대외활동 (기간 | 내용 | 구분)</h3>
+                <div id="activities-list"></div>
+                <button type="button" class="add-btn" onclick="addRow('activities-list', 3)">추가</button>
+            </div>
+
+            <!-- 스킬 -->
+            <div class="form-section">
+                <h3>스킬 (구분 | 내용)</h3>
+                <div id="skills-list"></div>
+                <button type="button" class="add-btn" onclick="addRow('skills-list', 2)">추가</button>
+            </div>
+
+            <button type="submit" style="width: 100%; font-size: 1.2em;">저장하기</button>
+        </form>
+    </div>
+
+    <script>
+        // 관리자 확인
+        if (sessionStorage.getItem('isAdmin') !== 'true') {
+            alert('관리자만 접근할 수 있습니다.');
+            window.location.href = 'profile.html';
+        }
+
+        // 기본 데이터 (DB가 비었을 때 사용)
+        const defaultData = {
+            name: "박도현 | Park Do-hyeon",
+            image: "profile_image.jpg",
+            contact: ["경상남도 거제시", "010-5807-1643", "dohyeon0225@naver.com", "dohyeons10@gnu.ac.kr"],
+            about: "<strong>기계 및 반도체 공학</strong>을 전공하며 기술 발전의 핵심 원리를 탐구하고, <br><strong>지식재산학</strong>을 통해 혁신 기술을 보호하는 방법을 배우며 미래 기술 전문가로 성장하고 있습니다.",
+            goals: "<p><strong>[ 기술의 탄생과 가치 보호를 잇는 '융합형 인재' ]</strong></p><p>중학교 발명영재 과정에서 시작된 공학적 호기심을, 대학에서의 전공 심화 학습을 통해 전문적인 IP 역량으로 확장하고 있습니다. 이를 바탕으로 혁신적인 아이디어를 현실로 구현하는 기술적 시각과, 그 가치를 독점적 권리로 확보하는 법적 시각을 모두 갖춘 전문가로 성장하고자 합니다. 단순한 기술 개발을 넘어, 연구개발의 노력이 정당한 권리로 인정받는 기술 생태계를 만드는 데 기여하겠습니다.</p>",
+            education: [
+                ["2018.03 ~ 2021.02", "거제중학교 졸업"],
+                ["2019.03 ~ 2019.12", "경상남도융합과학영재교육원 발명영재 과정 수료"],
+                ["2020.03 ~ 2020.12", "경상남도과학영재교육원 과학발명과정 수료"],
+                ["2021.03 ~ 2024.02", "거제옥포고등학교 졸업"],
+                ["2024.03 ~", "경상국립대학교 기계공학부 기계공학전공"],
+                ["2025.09 ~", "경상국립대학교 지식재산학 복수전공"],
+                ["2025.09 ~", "경상국립대학교 반도체공학 부전공"],
+                ["2025.09 ~", "경상국립대학교 미래차기계설계및생산 마이크로디그리 이수 중"]
+            ],
+            awards: [
+                ["2019.10.30", "발명한마당 큰잔치 산출물 전시 마당 창의인재상", "경상남도교육청 과학교육원"],
+                ["2022.08.", "경남과학전람회 장려상", "경상남도교육청"],
+                ["2022.10.", "전국청소년교통안전표지인식인공지능경진대회 우수상", "한라대학교 산학협력단"],
+                ["2023.01.", "전국고교자율주행경진대회 장려상 <br>(지역 최우수상)", "미래차전환부품사업단<br>(지역: 경성대학교 LINC 3.0 사업단)"],
+                ["2025.11.28.", "제조 빅데이터 분석 경진대회 장려상", "경상국립대학교 빅데이터 혁신융합대학 사업단"]
+            ],
+            certifications: [
+                ["2025.12.03.", "AI경영분석사(AIB)", "한국기업기술가치평가협회", "등록민간"],
+                ["2025.12.04.", "지식재산능력시험(6급, 447점)", "한국발명진흥회", "등록민간"]
+            ],
+            activities: [
+                ["2022.09. ~ 2022.11.", "갤럭시 고등 리더", "삼성전자"],
+                ["2025.10", "청소년 SW 동행 프로젝트 멘토링", "한국과학창의재단"]
+            ],
+            skills: [
+                ["캐드", "AutoCAD, Tinkercad, Fusion360"],
+                ["특허검색", "Kipris, WIPS On"],
+                ["코딩", "C / C++, Python"],
+                ["피지컬 컴퓨팅", "아두이노, 라즈베리파이, 마이크로비트"]
+            ]
+        };
+
+        // 헬퍼 함수: 단순 입력 필드 추가
+        function addInput(containerId, value = '') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = 'row-item';
+            div.innerHTML = `<input type="text" value="${value}"><button type="button" class="remove-btn" onclick="this.parentElement.remove()">삭제</button>`;
+            container.appendChild(div);
+        }
+
+        // 헬퍼 함수: 테이블 행 추가 (cols 개수만큼 입력창 생성)
+        function addRow(containerId, cols, values = []) {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = 'row-item';
+            let inputs = '';
+            for(let i=0; i<cols; i++) {
+                inputs += `<input type="text" value="${values[i] || ''}" placeholder="항목 ${i+1}">`;
+            }
+            div.innerHTML = `${inputs}<button type="button" class="remove-btn" onclick="this.parentElement.remove()">삭제</button>`;
+            container.appendChild(div);
+        }
+
+        // 데이터 로드 및 폼 채우기
+        db.ref('profile').once('value').then(snapshot => {
+            const data = snapshot.val() || defaultData;
+
+            document.getElementById('p-name').value = data.name;
+            document.getElementById('p-about').value = data.about;
+            document.getElementById('p-goals').value = data.goals;
+            document.getElementById('p-image-base64').value = data.image;
+            document.getElementById('preview-img').src = data.image;
+
+            (data.contact || []).forEach(v => addInput('contact-list', v));
+            (data.education || []).forEach(v => addRow('education-list', 2, v));
+            (data.awards || []).forEach(v => addRow('awards-list', 3, v));
+            (data.certifications || []).forEach(v => addRow('certifications-list', 4, v));
+            (data.activities || []).forEach(v => addRow('activities-list', 3, v));
+            (data.skills || []).forEach(v => addRow('skills-list', 2, v));
+        });
+
+        // 이미지 파일 처리
+        document.getElementById('p-image-file').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('p-image-base64').value = e.target.result;
+                    document.getElementById('preview-img').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 저장
+        document.getElementById('profile-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const getData = (id) => Array.from(document.getElementById(id).children).map(div => {
+                const inputs = div.querySelectorAll('input');
+                if (inputs.length === 1) return inputs[0].value;
+                return Array.from(inputs).map(input => input.value);
+            });
+
+            const newData = {
+                name: document.getElementById('p-name').value,
+                image: document.getElementById('p-image-base64').value,
+                about: document.getElementById('p-about').value,
+                goals: document.getElementById('p-goals').value,
+                contact: getData('contact-list'),
+                education: getData('education-list'),
+                awards: getData('awards-list'),
+                certifications: getData('certifications-list'),
+                activities: getData('activities-list'),
+                skills: getData('skills-list')
+            };
+
+            db.ref('profile').set(newData).then(() => {
+                alert('프로필이 저장되었습니다.');
+                window.location.href = 'profile.html';
+            });
+        });
+    </script>
+</body>
+</html>

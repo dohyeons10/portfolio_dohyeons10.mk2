@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="styles.css">
+    <title>사진 올리기</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="firebase_config.js"></script>
+    <script src="admin_key.js"></script>
+    <script src="auth.js"></script>
+</head>
+<body>
+    <a href="gallery.html" class="back-button">목록으로</a>
+    
+    <h1>사진 올리기</h1>
+
+    <form id="upload-form">
+        <label for="photo-file">사진 선택:</label><br>
+        <input type="file" id="photo-file" accept="image/*" required><br><br>
+
+        <label for="photo-caption">설명:</label><br>
+        <input type="text" id="photo-caption" placeholder="사진에 대한 설명을 입력하세요"><br><br>
+
+        <label for="photo-password">비밀번호:</label><br>
+        <input type="password" id="photo-password" placeholder="삭제/수정 시 필요합니다"><br><br>
+
+        <button type="submit">업로드</button>
+    </form>
+
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const fileInput = document.getElementById('photo-file');
+            const caption = document.getElementById('photo-caption').value;
+            const password = document.getElementById('photo-password').value;
+            const file = fileInput.files[0];
+
+            if (file && password) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const imageBase64 = e.target.result;
+                    
+                    db.ref('photos').push({
+                        image: imageBase64,
+                        caption: caption,
+                        password: password,
+                        date: new Date().toLocaleDateString()
+                    }).then(() => {
+                        alert('사진이 등록되었습니다.');
+                        window.location.href = 'gallery.html';
+                    });
+                };
+
+                reader.readAsDataURL(file); // 파일을 Base64 문자열로 읽기
+            } else {
+                alert('사진과 비밀번호를 모두 입력해주세요.');
+            }
+        });
+    </script>
+</body>
+</html>

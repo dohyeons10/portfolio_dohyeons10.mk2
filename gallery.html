@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="firebase_config.js"></script>
+    <script src="admin_key.js"></script>
+    <script src="auth.js"></script>
+    <title>사진첩</title>
+</head>
+<body>
+    <a href="blog.html" class="back-button">이전으로</a>
+    <div class="container">
+        <h1>사진첩</h1>
+        
+        <div style="text-align: right; margin-bottom: 20px;">
+            <a href="upload_photo.html" class="write-button">사진 올리기</a>
+        </div>
+
+        <div id="gallery-grid" class="gallery-grid">
+            <!-- 자바스크립트로 사진이 여기에 추가됩니다 -->
+        </div>
+    </div>
+
+    <script>
+        const galleryGrid = document.getElementById('gallery-grid');
+
+        // 사진 삭제 함수
+        window.deletePhoto = function(event, id, password) {
+            event.stopPropagation(); // 상세 페이지 이동 막기
+            
+            const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+
+            if (isAdmin) {
+                if (confirm('정말 삭제하시겠습니까?')) {
+                    db.ref('photos/' + id).remove();
+                    alert('삭제되었습니다.');
+                }
+            } else {
+                const inputPassword = prompt('사진 비밀번호를 입력하세요:');
+                if (password === inputPassword) {
+                    if (confirm('정말 삭제하시겠습니까?')) {
+                        db.ref('photos/' + id).remove();
+                        alert('삭제되었습니다.');
+                    }
+                } else if (inputPassword !== null) {
+                    alert('비밀번호가 일치하지 않습니다.');
+                }
+            }
+        };
+
+        db.ref('photos').on('value', (snapshot) => {
+            galleryGrid.innerHTML = '';
+            const data = snapshot.val();
+            
+            if (!data) {
+                galleryGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">등록된 사진이 없습니다.</p>';
+                return;
+            }
+
+            const photos = Object.keys(data).map(key => ({ id: key, ...data[key] })).reverse();
+
+            photos.forEach(photo => {
+                const commentCount = photo.comments ? Object.keys(photo.comments).length : 0;
+                const photoCard = document.createElement('div');
+                photoCard.className = 'photo-card';
+                photoCard.onclick = function() {
+                    window.location.href = `photo_view.html?id=${photo.id}`;
+                };
+                photoCard.innerHTML = `
+                    <img src="${photo.image}" alt="사진" class="photo-img">
+                    <div class="photo-info">
+                        <p class="photo-caption">${photo.caption} <span class="comment-count">[${commentCount}]</span></p>
+                        <p class="photo-date">${photo.date} <button onclick="deletePhoto(event, '${photo.id}', '${photo.password}')" class="delete-text-btn">삭제</button></p>
+                    </div>
+                `;
+                galleryGrid.appendChild(photoCard);
+            });
+        });
+    </script>
+</body>
+</html>

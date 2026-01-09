@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<a href="profile.html" class="back-button">이전으로</a>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="firebase_config.js"></script>
+    <script src="admin_key.js"></script>
+    <script src="auth.js"></script>
+    <title>수상 내용 게시판</title>
+</head>
+<body>
+    <div class="container">
+        <h1>수상 내용 목록</h1>
+        
+        <div id="board-list" class="board-list">
+            <!-- 자바스크립트로 게시글이 여기에 추가됩니다 -->
+        </div>
+        <div id="pagination" class="pagination"></div>
+
+        <div style="margin-top: 20px;" id="write-button-container">
+            <a href="awards_board_write.html" class="write-button">글쓰기</a>
+        </div>
+    </div>
+
+    <script>
+        let posts = []; // Firebase에서 불러온 데이터를 저장할 배열
+        const boardList = document.getElementById('board-list');
+        const paginationContainer = document.getElementById('pagination');
+        const itemsPerPage = 5; // 한 페이지당 보여줄 글 개수
+        let currentPage = 1;
+
+        // 관리자 권한 확인 및 글쓰기 버튼 숨김 처리
+        if (sessionStorage.getItem('isAdmin') !== 'true') {
+            document.getElementById('write-button-container').style.display = 'none';
+        }
+
+        // 게시글 불러오기 (Firebase)
+        db.ref('posts').on('value', (snapshot) => {
+            const data = snapshot.val();
+            posts = [];
+            if (data) {
+                // 객체를 배열로 변환 (ID 포함) 및 '수상' 카테고리만 필터링
+                Object.keys(data).forEach(key => {
+                    if (data[key].category === '수상') {
+                        posts.push({ id: key, ...data[key] });
+                    }
+                });
+            }
+            renderBoard(currentPage);
+        });
+
+        // 글 삭제 함수
+        function deletePost(event, id, password) {
+            event.stopPropagation(); // 상세 페이지 이동 막기
+            
+            const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+
+            if (isAdmin) {
+                if (confirm('정말 삭제하시겠습니까?')) {
+                    db.ref('posts/' + id).remove();
+                    alert('삭제되었습니다.');
+                }
+            } else {
+                const inputPassword = prompt('글 비밀번호를 입력하세요:');
+                if (password === inputPassword) {
+                    if (confirm('정말 삭제하시겠습니까?')) {
+                        db.ref('posts/' + id).remove();
+                        alert('삭제되었습니다.');
+                    }
+                } else if (inputPassword !== null) {
+                    alert('비밀번호가 일치하지 않습니다.');
+                }
+            }
+        }
+
+        function renderBoard(page) {
+            boardList.innerHTML = '';
+            
+            if (posts.length === 0) {
+                boardList.innerHTML = '<p>등록된 수상 내역이 없습니다.</p>';
+                paginationContainer.innerHTML = '';
+                return;
+            }
+
+            // 정렬: order 필드 기준 오름차순 (없으면 최신순)
+            posts.sort((a, b) => {
+                const orderA = a.order !== undefined ? a.order : Number.MAX_SAFE_INTEGER;
+                const orderB = b.order !== undefined ? b.order : Number.MAX_SAFE_INTEGER;
+                if (orderA !== orderB) return orderA - orderB;
+                return b.id.localeCompare(a.id);
+            });
+
+            // 페이지네이션 슬라이싱
+            const startIndex = (page - 1) * itemsPerPage;
+            const pagedPosts = posts.slice(startIndex, startIndex + itemsPerPage);
+
+            pagedPosts.forEach(post => {
+                const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+                const deleteBtn = isAdmin ? `<button class="delete-button" onclick="deletePost(event, '${post.id}', '${post.password}')">삭제</button>` : '';
+                
+                const postItem = document.createElement('div');
+                postItem.className = 'post-item';
+                postItem.onclick = function() {
+                    window.location.href = `view.html?id=${post.id}`;
+                };
+                postItem.innerHTML = `
+                    <h3>${post.title}</h3>
+                    <div class="post-meta">
+                        ${deleteBtn}
+                    </div>
+                `;
+                boardList.appendChild(postItem);
+            });
+            
+            renderPagination(posts.length);
+        }
+
+        function renderPagination(totalItems) {
+            paginationContainer.innerHTML = '';
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            
+            if (totalPages <= 1) return; // 페이지가 1개 이하면 버튼 표시 안 함
+
+            for (let i = 1; i <= totalPages; i++) {
+                const pageLink = document.createElement('button');
+                pageLink.innerText = i;
+                pageLink.className = 'page-link';
+                if (i === currentPage) {
+                    pageLink.classList.add('active');
+                }
+                pageLink.onclick = function() {
+                    currentPage = i;
+                    renderBoard(currentPage);
+                };
+                paginationContainer.appendChild(pageLink);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="styles.css">
+    <title>대외활동 게시판 관리</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="firebase_config.js"></script>
+    <script src="admin_key.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        if (sessionStorage.getItem('isAdmin') !== 'true') {
+            alert('관리자만 접근할 수 있습니다.');
+            window.location.href = 'index.html';
+        }
+    </script>
+</head>
+<body>
+    <a href="portfolio_board_management.html" class="back-button">이전으로</a>
+    <div class="container">
+        <h1>대외활동 게시판 관리</h1>
+        <p>대외활동 내역 게시글을 관리합니다.</p>
+        
+        <div class="menu-grid">
+            <a href="reorder_posts.html?category=대외활동" class="menu-card">
+                <div class="icon">⇄</div>
+                <h2>순서 변경</h2>
+                <p>게시글 순서를 변경합니다</p>
+            </a>
+            <div class="menu-card" onclick="toggleDeleteMode()" style="cursor: pointer;">
+                <div class="icon">🗑️</div>
+                <h2>글 삭제</h2>
+                <p>게시글을 삭제합니다</p>
+            </div>
+        </div>
+        
+        <div id="board-list" class="board-list" style="display: none; margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        const boardList = document.getElementById('board-list');
+
+        function toggleDeleteMode() {
+            const list = document.getElementById('board-list');
+            if (list.style.display === 'none') {
+                list.style.display = 'block';
+                setTimeout(() => list.scrollIntoView({ behavior: 'smooth' }), 100);
+            } else {
+                list.style.display = 'none';
+            }
+        }
+
+        db.ref('posts').on('value', (snapshot) => {
+            const data = snapshot.val();
+            boardList.innerHTML = '';
+            
+            if (!data) {
+                boardList.innerHTML = '<p>등록된 글이 없습니다.</p>';
+                return;
+            }
+
+            const posts = [];
+            Object.keys(data).forEach(key => {
+                if (data[key].category === '대외활동') {
+                    posts.push({ id: key, ...data[key] });
+                }
+            });
+
+            if (posts.length === 0) {
+                boardList.innerHTML = '<p>등록된 대외활동 내역이 없습니다.</p>';
+                return;
+            }
+
+            // 정렬: order 필드 기준 오름차순 (없으면 최신순)
+            posts.sort((a, b) => {
+                const orderA = a.order !== undefined ? a.order : Number.MAX_SAFE_INTEGER;
+                const orderB = b.order !== undefined ? b.order : Number.MAX_SAFE_INTEGER;
+                if (orderA !== orderB) return orderA - orderB;
+                return b.id.localeCompare(a.id);
+            });
+
+            posts.forEach(post => {
+                const postItem = document.createElement('div');
+                postItem.className = 'post-item';
+                postItem.innerHTML = `
+                    <h3>${post.title}</h3>
+                    <div class="post-meta">
+                        <button class="delete-button" onclick="deletePost('${post.id}')">삭제</button>
+                    </div>
+                `;
+                boardList.appendChild(postItem);
+            });
+        });
+
+        function deletePost(id) {
+            if (confirm('정말 삭제하시겠습니까?')) {
+                db.ref('posts/' + id).remove();
+            }
+        }
+    </script>
+</body>
+</html>

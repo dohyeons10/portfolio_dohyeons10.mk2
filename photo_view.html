@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko">
+<a href="gallery.html" class="back-button">목록으로</a>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="firebase_config.js"></script>
+    <script src="admin_key.js"></script>
+    <script src="auth.js"></script>
+    <title>사진 보기</title>
+</head>
+<body>
+    <div class="container">
+        <div style="display: flex; justify-content: center; align-items: center; position: relative;">
+            <h1 id="view-caption" style="margin: 0;"></h1>
+            <div style="position: absolute; right: 0;">
+                <button id="edit-btn" class="edit-button">수정</button>
+                <button id="delete-btn" class="delete-button">삭제</button>
+            </div>
+        </div>
+        <p id="view-date" class="post-date" style="text-align: right;"></p>
+        <hr>
+        
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img id="view-image" src="" alt="상세 사진" style="max-width: 100%; border-radius: 8px;">
+        </div>
+
+        <hr style="margin: 30px 0;">
+
+        <div class="comments-section">
+            <h3 style="text-align: left;">댓글</h3>
+            <ul id="comments-list" class="comments-list"></ul>
+            
+            <form id="comment-form" style="margin-top: 20px;">
+                <input type="text" id="comment-author" placeholder="작성자 (선택)" style="width: 30%; margin-bottom: 5px;">
+                <input type="password" id="comment-password" placeholder="비밀번호" style="width: 30%; margin-bottom: 5px; margin-left: 5px;">
+                <textarea id="comment-content" placeholder="댓글을 입력하세요" rows="3"></textarea>
+                <button type="submit" style="margin-top: 5px; background-color: #6c757d;">댓글 등록</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');
+        const photos = JSON.parse(localStorage.getItem('photos')) || [];
+
+        if (id !== null && photos[id]) {
+            const photo = photos[id];
+            document.getElementById('view-caption').innerText = photo.caption || '무제';
+            document.getElementById('view-date').innerText = photo.date;
+            document.getElementById('view-image').src = photo.image;
+
+            // 댓글 기능 초기화
+            if (!photo.comments) {
+                photo.comments = [];
+            }
+
+            const commentsList = document.getElementById('comments-list');
+
+            function renderComments() {
+                commentsList.innerHTML = '';
+                photo.comments.forEach((comment, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'comment-item';
+                    li.innerHTML = `
+                        <div class="comment-header">
+                            <strong>${comment.author || '익명'}</strong>
+                            <span style="margin-left: auto; font-size: 0.8em; color: #888;">${comment.date}</span>
+                            <button class="delete-comment-btn" onclick="deleteComment(${index})">&times;</button>
+                        </div>
+                        <p class="comment-text">${comment.content}</p>
+                    `;
+                    commentsList.appendChild(li);
+                });
+            }
+
+            document.getElementById('comment-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const authorInput = document.getElementById('comment-author');
+                const passwordInput = document.getElementById('comment-password');
+                const contentInput = document.getElementById('comment-content');
+                
+                if (contentInput.value.trim() && passwordInput.value.trim()) {
+                    photo.comments.push({
+                        author: authorInput.value.trim(),
+                        password: passwordInput.value.trim(),
+                        content: contentInput.value.trim(),
+                        date: new Date().toLocaleDateString()
+                    });
+                    localStorage.setItem('photos', JSON.stringify(photos));
+                    contentInput.value = '';
+                    passwordInput.value = '';
+                    renderComments();
+                } else {
+                    alert('댓글 내용과 비밀번호를 입력해주세요.');
+                }
+            });
+
+            window.deleteComment = function(index) {
+                const comment = photo.comments[index];
+                const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+
+                if (isAdmin) {
+                    if (confirm('관리자 권한으로 댓글을 삭제하시겠습니까?')) {
+                        photo.comments.splice(index, 1);
+                        localStorage.setItem('photos', JSON.stringify(photos));
+                        renderComments();
+                    }
+                } else {
+                    const inputPassword = prompt('댓글 비밀번호를 입력하세요:');
+                    if (comment.password === inputPassword) {
+                        if (confirm('댓글을 삭제하시겠습니까?')) {
+                            photo.comments.splice(index, 1);
+                            localStorage.setItem('photos', JSON.stringify(photos));
+                            renderComments();
+                        }
+                    } else if (inputPassword !== null) {
+                        alert('비밀번호가 일치하지 않습니다.');
+                    }
+                }
+            };
+
+            renderComments();
+
+            document.getElementById('edit-btn').onclick = function() {
+                window.location.href = `edit_photo.html?id=${id}`;
+            };
+
+            document.getElementById('delete-btn').onclick = function() {
+                const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+
+                if (isAdmin) {
+                    if (confirm('정말 삭제하시겠습니까?')) {
+                        photos.splice(id, 1);
+                        localStorage.setItem('photos', JSON.stringify(photos));
+                        alert('삭제되었습니다.');
+                        window.location.href = 'gallery.html';
+                    }
+                } else {
+                    const inputPassword = prompt('사진 비밀번호를 입력하세요:');
+                    if (photo.password === inputPassword) {
+                        if (confirm('정말 삭제하시겠습니까?')) {
+                            photos.splice(id, 1);
+                            localStorage.setItem('photos', JSON.stringify(photos));
+                            alert('삭제되었습니다.');
+                            window.location.href = 'gallery.html';
+                        }
+                    } else if (inputPassword !== null) {
+                        alert('비밀번호가 일치하지 않습니다.');
+                    }
+                }
+            };
+        } else {
+            alert('존재하지 않는 사진입니다.');
+            window.location.href = 'gallery.html';
+        }
+    </script>
+</body>
+</html>
