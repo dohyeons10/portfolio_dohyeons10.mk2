@@ -6,6 +6,7 @@
     <title>박도현 | 포트폴리오</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="firebase_config.js"></script>
     <script src="admin_key.js"></script>
@@ -227,6 +228,10 @@
 
     <footer>
         <p>&copy; 2025 박도현. All rights reserved.</p>
+        <div style="margin-top: 10px; font-size: 0.8em;">
+            <a href="login.html" id="login-link" style="color: #666; text-decoration: none;">관리자 로그인</a>
+            <a href="#" id="logout-link" onclick="logout()" style="color: #666; text-decoration: none; display: none;">로그아웃</a>
+        </div>
     </footer>
 
     <script>
