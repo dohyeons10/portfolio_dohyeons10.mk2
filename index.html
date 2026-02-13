@@ -235,39 +235,52 @@
     </footer>
 
     <script>
-        // 관리자 권한 확인 및 수정 버튼 표시
-        if (sessionStorage.getItem('isAdmin') === 'true') {
-            const editBtn = document.createElement('a');
-            editBtn.href = 'edit_profile.html';
-            editBtn.style.position = 'absolute';
-            editBtn.style.top = '10px';
-            editBtn.style.right = '110px';
-            editBtn.style.zIndex = '999999';
-            editBtn.style.padding = '8px 12px';
-            editBtn.style.border = 'none';
-            editBtn.style.borderRadius = '4px';
-            editBtn.style.cursor = 'pointer';
-            editBtn.style.fontWeight = 'bold';
-            editBtn.style.fontFamily = 'sans-serif';
-            editBtn.style.fontSize = '12px';
-            editBtn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
-            editBtn.style.color = 'white';
-            editBtn.style.backgroundColor = '#007BFF';
-            editBtn.style.textDecoration = 'none';
-            editBtn.style.transition = 'transform 0.2s, box-shadow 0.2s';
+        // 관리자 권한 확인 및 수정 버튼 표시 (Firebase Auth 상태 감지)
+        firebase.auth().onAuthStateChanged((user) => {
+            const adminEmail = 'dohyeons10@gmail.com';
 
-            editBtn.onmouseover = function() {
-                this.style.transform = 'translateY(-2px)';
-                this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
-            };
-            editBtn.onmouseout = function() {
-                this.style.transform = 'translateY(0)';
-                this.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
-            };
+            // 로그인되어 있고, 이메일이 관리자 이메일과 일치할 때만 버튼 생성
+            if (user && user.email === adminEmail) {
+                // 이미 버튼이 있다면 생성하지 않음
+                if (document.getElementById('edit-profile-btn')) return;
 
-            editBtn.innerText = '프로필 수정';
-            document.body.appendChild(editBtn);
-        }
+                const editBtn = document.createElement('a');
+                editBtn.id = 'edit-profile-btn';
+                editBtn.href = 'edit_profile.html';
+                editBtn.style.position = 'absolute';
+                editBtn.style.top = '10px';
+                editBtn.style.right = '110px';
+                editBtn.style.zIndex = '999999';
+                editBtn.style.padding = '8px 12px';
+                editBtn.style.border = 'none';
+                editBtn.style.borderRadius = '4px';
+                editBtn.style.cursor = 'pointer';
+                editBtn.style.fontWeight = 'bold';
+                editBtn.style.fontFamily = 'sans-serif';
+                editBtn.style.fontSize = '12px';
+                editBtn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+                editBtn.style.color = 'white';
+                editBtn.style.backgroundColor = '#007BFF';
+                editBtn.style.textDecoration = 'none';
+                editBtn.style.transition = 'transform 0.2s, box-shadow 0.2s';
+
+                editBtn.onmouseover = function() {
+                    this.style.transform = 'translateY(-2px)';
+                    this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+                };
+                editBtn.onmouseout = function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+                };
+
+                editBtn.innerText = '프로필 수정';
+                document.body.appendChild(editBtn);
+            } else {
+                // 로그아웃 상태라면 버튼 제거
+                const btn = document.getElementById('edit-profile-btn');
+                if (btn) btn.remove();
+            }
+        });
 
         // Firebase에서 프로필 데이터 불러오기
         db.ref('profile').on('value', snapshot => {
