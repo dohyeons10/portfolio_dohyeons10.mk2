@@ -194,6 +194,13 @@
         document.getElementById('profile-form').addEventListener('submit', function(e) {
             e.preventDefault();
 
+            // [디버깅] 현재 로그인된 Firebase 유저 확인
+            const user = firebase.auth().currentUser;
+            if (!user) {
+                alert('로그인 정보가 확인되지 않습니다. 페이지를 새로고침하거나 다시 로그인해주세요.');
+                return;
+            }
+
             // 저장 버튼 비활성화 및 텍스트 변경 (중복 클릭 방지 및 피드백)
             const submitBtn = e.target.querySelector('button[type="submit"]');
             const originalBtnText = submitBtn.innerText;
@@ -233,7 +240,8 @@
                     .catch((error) => {
                         console.error('Firebase Save Error:', error);
                         if (error.code === 'PERMISSION_DENIED') {
-                            alert('⛔ 저장 실패: 데이터베이스 쓰기 권한이 없습니다.\n\nFirebase 콘솔 > Realtime Database > 규칙(Rules) 탭에서\n".write": true 로 설정되어 있는지 확인해주세요.');
+                            const uid = user.uid;
+                            alert(`⛔ 권한 거부됨 (PERMISSION_DENIED)\n\n현재 로그인된 UID:\n${uid}\n\n위 UID가 Firebase 규칙(Rules)에 정확히 입력되었는지 확인해주세요.\n(규칙의 UID 앞뒤에 공백이 없는지 꼭 확인하세요!)`);
                         } else {
                             alert('저장에 실패했습니다: ' + error.message);
                         }
