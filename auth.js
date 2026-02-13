@@ -53,8 +53,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (user) {
                 // 로그인 상태 -> 로그아웃 버튼으로 변경
                 console.log('User is signed in:', user.email);
-                sessionStorage.setItem('isAdmin', 'true');
                 
+                // [중요] 특정 이메일만 관리자 권한 부여
+                if (user.email === 'dohyeons10@gmail.com') {
+                    sessionStorage.setItem('isAdmin', 'true');
+                } else {
+                    sessionStorage.removeItem('isAdmin');
+                }
+
                 authBtn.innerText = '로그아웃';
                 authBtn.style.backgroundColor = '#dc3545'; // 빨간색
                 authBtn.onclick = function() {
