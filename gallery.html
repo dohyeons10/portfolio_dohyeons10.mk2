@@ -65,6 +65,8 @@
 
             photos.forEach(photo => {
                 const commentCount = photo.comments ? Object.keys(photo.comments).length : 0;
+                const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+                const deleteBtn = isAdmin ? `<button onclick="deletePhoto(event, '${photo.id}', '${photo.password}')" class="delete-text-btn">삭제</button>` : '';
                 const photoCard = document.createElement('div');
                 photoCard.className = 'photo-card';
                 photoCard.onclick = function() {
@@ -74,7 +76,7 @@
                     <img src="${photo.image}" alt="사진" class="photo-img">
                     <div class="photo-info">
                         <p class="photo-caption">${photo.caption} <span class="comment-count">[${commentCount}]</span></p>
-                        <p class="photo-date">${photo.date} <button onclick="deletePhoto(event, '${photo.id}', '${photo.password}')" class="delete-text-btn">삭제</button></p>
+                        <p class="photo-date">${photo.date} ${deleteBtn}</p>
                     </div>
                 `;
                 galleryGrid.appendChild(photoCard);

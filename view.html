@@ -72,7 +72,7 @@
                     }
 
                     const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
-                    if ((post.category === '수상' || post.category === '자격증' || post.category === '대외활동') && !isAdmin) {
+                    if (!isAdmin) {
                         document.getElementById('delete-btn').style.display = 'none';
                         document.getElementById('edit-btn').style.display = 'none';
                     }

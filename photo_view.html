@@ -53,6 +53,12 @@
             document.getElementById('view-date').innerText = photo.date;
             document.getElementById('view-image').src = photo.image;
 
+            const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+            if (!isAdmin) {
+                document.getElementById('edit-btn').style.display = 'none';
+                document.getElementById('delete-btn').style.display = 'none';
+            }
+
             // 댓글 기능 초기화
             if (!photo.comments) {
                 photo.comments = [];

@@ -127,6 +127,8 @@
                 // 댓글 개수 계산 (객체이므로 키 개수 확인)
                 const commentCount = post.comments ? Object.keys(post.comments).length : 0;
                 const categoryLabel = post.category ? `[${post.category}]` : '[일반]';
+                const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+                const deleteBtn = isAdmin ? `<button class="delete-button" onclick="deletePost(event, '${post.id}', '${post.password}')">삭제</button>` : '';
                 
                 const postItem = document.createElement('div');
                 postItem.className = 'post-item';
@@ -137,7 +139,7 @@
                     <h3><span style="color: #007BFF; font-size: 0.8em; margin-right: 5px;">${categoryLabel}</span>${post.title} <span class="comment-count">[${commentCount}]</span></h3>
                     <div class="post-meta">
                         <span class="post-date">${post.date}</span>
-                        <button class="delete-button" onclick="deletePost(event, '${post.id}', '${post.password}')">삭제</button>
+                        ${deleteBtn}
                     </div>
                 `;
                 boardList.appendChild(postItem);
