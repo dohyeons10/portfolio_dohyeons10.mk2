@@ -5,6 +5,7 @@
     <link rel="stylesheet" href="styles.css">
     <title>프로필 수정</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="firebase_config.js"></script>
     <script src="admin_key.js"></script>
@@ -194,20 +195,20 @@
         document.getElementById('profile-form').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            // [디버깅] 현재 로그인된 Firebase 유저 확인
-            const user = firebase.auth().currentUser;
-            if (!user) {
-                alert('로그인 정보가 확인되지 않습니다. 페이지를 새로고침하거나 다시 로그인해주세요.');
-                return;
-            }
-
             // 저장 버튼 비활성화 및 텍스트 변경 (중복 클릭 방지 및 피드백)
             const submitBtn = e.target.querySelector('button[type="submit"]');
             const originalBtnText = submitBtn.innerText;
-            submitBtn.disabled = true;
-            submitBtn.innerText = '저장 중...';
 
             try {
+                submitBtn.disabled = true;
+                submitBtn.innerText = '저장 중...';
+
+                // [디버깅] 현재 로그인된 Firebase 유저 확인
+                const user = firebase.auth().currentUser;
+                if (!user) {
+                    throw new Error('로그인 정보가 확인되지 않습니다. 페이지를 새로고침하거나 다시 로그인해주세요.');
+                }
+
                 const getData = (id) => {
                     const container = document.getElementById(id);
                     if (!container) return [];
@@ -249,8 +250,8 @@
                         submitBtn.innerText = originalBtnText;
                     });
             } catch (err) {
-                console.error('Data Preparation Error:', err);
-                alert('데이터 처리 중 오류가 발생했습니다: ' + err.message);
+                console.error('Error:', err);
+                alert('오류가 발생했습니다: ' + err.message);
                 submitBtn.disabled = false;
                 submitBtn.innerText = originalBtnText;
             }
