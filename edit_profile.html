@@ -194,29 +194,58 @@
         document.getElementById('profile-form').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            const getData = (id) => Array.from(document.getElementById(id).children).map(div => {
-                const inputs = div.querySelectorAll('input');
-                if (inputs.length === 1) return inputs[0].value;
-                return Array.from(inputs).map(input => input.value);
-            });
+            // 저장 버튼 비활성화 및 텍스트 변경 (중복 클릭 방지 및 피드백)
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerText;
+            submitBtn.disabled = true;
+            submitBtn.innerText = '저장 중...';
 
-            const newData = {
-                name: document.getElementById('p-name').value,
-                image: document.getElementById('p-image-base64').value,
-                about: document.getElementById('p-about').value,
-                goals: document.getElementById('p-goals').value,
-                contact: getData('contact-list'),
-                education: getData('education-list'),
-                awards: getData('awards-list'),
-                certifications: getData('certifications-list'),
-                activities: getData('activities-list'),
-                skills: getData('skills-list')
-            };
+            try {
+                const getData = (id) => {
+                    const container = document.getElementById(id);
+                    if (!container) return [];
+                    return Array.from(container.children).map(div => {
+                        const inputs = div.querySelectorAll('input');
+                        if (inputs.length === 0) return '';
+                        if (inputs.length === 1) return inputs[0].value;
+                        return Array.from(inputs).map(input => input.value);
+                    });
+                };
 
-            db.ref('profile').set(newData).then(() => {
-                alert('프로필이 저장되었습니다.');
-                window.location.href = 'index.html';
-            });
+                const newData = {
+                    name: document.getElementById('p-name').value,
+                    image: document.getElementById('p-image-base64').value,
+                    about: document.getElementById('p-about').value,
+                    goals: document.getElementById('p-goals').value,
+                    contact: getData('contact-list'),
+                    education: getData('education-list'),
+                    awards: getData('awards-list'),
+                    certifications: getData('certifications-list'),
+                    activities: getData('activities-list'),
+                    skills: getData('skills-list')
+                };
+
+                db.ref('profile').set(newData)
+                    .then(() => {
+                        alert('프로필이 저장되었습니다.');
+                        window.location.href = 'index.html';
+                    })
+                    .catch((error) => {
+                        console.error('Firebase Save Error:', error);
+                        if (error.code === 'PERMISSION_DENIED') {
+                            alert('⛔ 저장 실패: 데이터베이스 쓰기 권한이 없습니다.\n\nFirebase 콘솔 > Realtime Database > 규칙(Rules) 탭에서\n".write": true 로 설정되어 있는지 확인해주세요.');
+                        } else {
+                            alert('저장에 실패했습니다: ' + error.message);
+                        }
+                        submitBtn.disabled = false;
+                        submitBtn.innerText = originalBtnText;
+                    });
+            } catch (err) {
+                console.error('Data Preparation Error:', err);
+                alert('데이터 처리 중 오류가 발생했습니다: ' + err.message);
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalBtnText;
+            }
         });
     </script>
 </body>
