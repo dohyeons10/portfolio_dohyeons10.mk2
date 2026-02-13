@@ -313,7 +313,7 @@
             };
 
             html += renderTable('education', '학력', ['기간', '학교 및 전공'], data.education);
-            html += renderTable('awards', '수상 내용 <a href="awards_board_write.html" class="write-button" style="font-size: 0.5em; padding: 5px 10px; vertical-align: middle; margin-left: 10px; text-decoration: none; color: white;">상세</a>', ['기간', '수상 내용', '구분'], data.awards);
+            html += renderTable('awards', '수상 내용 <a href="awards_board.html" class="write-button" style="font-size: 0.5em; padding: 5px 10px; vertical-align: middle; margin-left: 10px; text-decoration: none; color: white;">상세</a>', ['기간', '수상 내용', '구분'], data.awards);
             html += renderTable('certifications', '자격 취득 내용 <a href="certifications_board.html" class="write-button" style="font-size: 0.5em; padding: 5px 10px; vertical-align: middle; margin-left: 10px; text-decoration: none; color: white;">상세</a>', ['기간', '자격 내용', '발급 기관', '구분'], data.certifications);
             html += renderTable('activities', '대외활동 내용 <a href="activities_board.html" class="write-button" style="font-size: 0.5em; padding: 5px 10px; vertical-align: middle; margin-left: 10px; text-decoration: none; color: white;">상세</a>', ['기간', '활동 내용', '구분'], data.activities);
             html += renderTable('skills', '스킬', ['구분', '내용'], data.skills);
@@ -325,4 +325,3 @@
     </script>
 </body>
 </html>
-

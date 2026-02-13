@@ -20,7 +20,7 @@
     </style>
 </head>
 <body>
-    <a href="profile.html" class="back-button">취소</a>
+    <a href="index.html" class="back-button">취소</a>
     <div class="container">
         <h1>프로필 수정</h1>
         <form id="profile-form">
@@ -94,7 +94,7 @@
         // 관리자 확인
         if (sessionStorage.getItem('isAdmin') !== 'true') {
             alert('관리자만 접근할 수 있습니다.');
-            window.location.href = 'profile.html';
+            window.location.href = 'index.html';
         }
 
         // 기본 데이터 (DB가 비었을 때 사용)
@@ -215,7 +215,7 @@
 
             db.ref('profile').set(newData).then(() => {
                 alert('프로필이 저장되었습니다.');
-                window.location.href = 'profile.html';
+                window.location.href = 'index.html';
             });
         });
     </script>
