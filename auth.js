@@ -4,13 +4,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // 로그인 페이지에서는 버튼 생성 안 함
     const path = window.location.pathname;
     const page = path.split("/").pop();
-    if (page === 'login.html') return;
+    if (page.indexOf('login.html') !== -1) return;
 
-    // 1. 관리자 인증 버튼 생성 (과거 스타일 복원)
+    // 1. 관리자 인증 버튼 생성
     const authBtn = document.createElement('button');
     
     // 버튼 스타일 설정
-    authBtn.style.position = 'absolute';
+    authBtn.style.position = 'fixed'; // 스크롤 시에도 항상 보이도록 fixed 사용
     authBtn.style.top = '10px';
     authBtn.style.right = '10px'; // 우측 상단 (과거 코드 기준)
     authBtn.style.zIndex = '999999';
@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
     authBtn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
     authBtn.style.color = 'white';
     authBtn.style.transition = 'transform 0.2s, box-shadow 0.2s';
+    authBtn.style.display = 'none'; // 초기에는 숨김 (Auth 상태 확인 후 표시)
 
     // 호버 효과
     authBtn.onmouseover = function() {
@@ -49,6 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (typeof firebase !== 'undefined' && firebase.auth) {
         firebase.auth().onAuthStateChanged((user) => {
             hideFooterLinks(); // 상태 변경 시마다 하단 링크 숨김 확인
+            authBtn.style.display = 'block'; // 상태 확인 후 버튼 표시
 
             if (user) {
                 // 로그인 상태 -> 로그아웃 버튼으로 변경
@@ -85,7 +87,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     } else {
         console.error('Firebase Auth not loaded');
-        authBtn.style.display = 'none';
     }
 });
 
