@@ -80,17 +80,13 @@
                 db.ref('posts').once('value').then(snapshot => {
                     const data = snapshot.val() || {};
                     const certificationPosts = Object.values(data).filter(post => post.category === '자격증');
-                    const lastOrder = certificationPosts.reduce((maxOrder, post) => {
-                        return post.order !== undefined ? Math.max(maxOrder, Number(post.order)) : maxOrder;
-                    }, -1);
-
                     return db.ref('posts').push({
                         category: '자격증',
                         title: title,
                         content: content,
                         image: imageBase64,
                         date: date,
-                        order: lastOrder + 1
+                        order: certificationPosts.length
                     });
                 }).then(() => {
                     alert('자격증 내용이 등록되었습니다.');

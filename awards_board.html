@@ -50,8 +50,31 @@
                     }
                 });
             }
+            normalizePostOrder();
             renderBoard(currentPage);
         });
+
+        function normalizePostOrder() {
+            const orderedPosts = posts
+                .filter(post => post.order !== undefined)
+                .sort((a, b) => Number(a.order) - Number(b.order));
+            const legacyPosts = posts
+                .filter(post => post.order === undefined)
+                .sort((a, b) => a.id.localeCompare(b.id));
+            const normalizedPosts = [...orderedPosts, ...legacyPosts];
+            const updates = {};
+
+            normalizedPosts.forEach((post, index) => {
+                if (Number(post.order) !== index) {
+                    updates[`posts/${post.id}/order`] = index;
+                    post.order = index;
+                }
+            });
+
+            if (Object.keys(updates).length > 0) {
+                db.ref().update(updates);
+            }
+        }
 
         // 글 삭제 함수
         function deletePost(event, id, password) {
@@ -88,14 +111,7 @@
 
             // 정렬: 지정된 순서 우선, 순서가 없는 글은 오래된 글부터 표시
             posts.sort((a, b) => {
-                const hasOrderA = a.order !== undefined;
-                const hasOrderB = b.order !== undefined;
-
-                if (hasOrderA && hasOrderB && a.order !== b.order) {
-                    return a.order - b.order;
-                }
-                if (hasOrderA !== hasOrderB) return hasOrderA ? -1 : 1;
-                return a.id.localeCompare(b.id);
+                return Number(a.order) - Number(b.order);
             });
 
             // 페이지네이션 슬라이싱

@@ -80,17 +80,13 @@
                 db.ref('posts').once('value').then(snapshot => {
                     const data = snapshot.val() || {};
                     const activityPosts = Object.values(data).filter(post => post.category === '대외활동');
-                    const lastOrder = activityPosts.reduce((maxOrder, post) => {
-                        return post.order !== undefined ? Math.max(maxOrder, Number(post.order)) : maxOrder;
-                    }, -1);
-
                     return db.ref('posts').push({
                         category: '대외활동',
                         title: title,
                         content: content,
                         image: imageBase64,
                         date: date,
-                        order: lastOrder + 1
+                        order: activityPosts.length
                     });
                 }).then(() => {
                     alert('대외활동 내용이 등록되었습니다.');

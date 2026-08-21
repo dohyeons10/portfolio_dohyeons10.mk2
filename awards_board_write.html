@@ -80,17 +80,13 @@
                 db.ref('posts').once('value').then(snapshot => {
                     const data = snapshot.val() || {};
                     const awardPosts = Object.values(data).filter(post => post.category === '수상');
-                    const lastOrder = awardPosts.reduce((maxOrder, post) => {
-                        return post.order !== undefined ? Math.max(maxOrder, Number(post.order)) : maxOrder;
-                    }, -1);
-
                     return db.ref('posts').push({
                         category: '수상',
                         title: title,
                         content: content,
                         image: imageBase64,
                         date: date,
-                        order: lastOrder + 1
+                        order: awardPosts.length
                     });
                 }).then(() => {
                     alert('수상 내용이 등록되었습니다.');
