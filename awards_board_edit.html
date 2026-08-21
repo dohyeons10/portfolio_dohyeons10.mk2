@@ -19,9 +19,10 @@
         <label for="post-title">제목:</label><br>
         <input type="text" id="post-title" name="post-title"><br><br>
 
-        <label for="post-image">수상 사진 (선택):</label><br>
-        <input type="file" id="post-image" accept="image/*"><br>
-        <img id="image-preview" alt="수상 사진 미리보기" style="display: none; max-width: 100%; max-height: 300px; margin: 10px 0; object-fit: contain;"><br>
+        <label for="post-image">수상 사진 또는 PDF (선택):</label><br>
+        <input type="file" id="post-image" accept="image/*,.pdf"><br>
+        <img id="image-preview" alt="수상 사진 미리보기" style="display: none; max-width: 100%; max-height: 300px; margin: 10px 0; object-fit: contain;">
+        <iframe id="pdf-preview" title="선택한 PDF 미리보기" style="display: none; width: 100%; height: 400px; margin: 10px 0; border: 1px solid #ddd;"></iframe><br>
 
         <label for="post-content">내용:</label><br>
         <textarea id="post-content" name="post-content" rows="10" cols="50"></textarea><br><br>
@@ -39,8 +40,8 @@
             const file = this.files[0];
             if (!file) return;
 
-            if (!file.type.startsWith('image/')) {
-                alert('이미지 파일만 선택해주세요.');
+            if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+                alert('이미지 또는 PDF 파일만 선택해주세요.');
                 this.value = '';
                 return;
             }
@@ -48,9 +49,17 @@
             const reader = new FileReader();
             reader.onload = function(event) {
                 imageBase64 = event.target.result;
-                const preview = document.getElementById('image-preview');
-                preview.src = imageBase64;
-                preview.style.display = 'block';
+                const imagePreview = document.getElementById('image-preview');
+                const pdfPreview = document.getElementById('pdf-preview');
+                if (file.type === 'application/pdf') {
+                    pdfPreview.src = imageBase64;
+                    pdfPreview.style.display = 'block';
+                    imagePreview.style.display = 'none';
+                } else {
+                    imagePreview.src = imageBase64;
+                    imagePreview.style.display = 'block';
+                    pdfPreview.style.display = 'none';
+                }
             };
             reader.readAsDataURL(file);
         });
@@ -71,9 +80,15 @@
                 document.getElementById('post-content').value = post.content;
                 imageBase64 = post.image || '';
                 if (imageBase64) {
-                    const preview = document.getElementById('image-preview');
-                    preview.src = imageBase64;
-                    preview.style.display = 'block';
+                    const imagePreview = document.getElementById('image-preview');
+                    const pdfPreview = document.getElementById('pdf-preview');
+                    if (imageBase64.startsWith('data:application/pdf')) {
+                        pdfPreview.src = imageBase64;
+                        pdfPreview.style.display = 'block';
+                    } else {
+                        imagePreview.src = imageBase64;
+                        imagePreview.style.display = 'block';
+                    }
                 }
             } else {
                 alert('관리자만 수정할 수 있습니다.');
