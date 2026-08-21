@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
-<a href="profile.html" class="back-button">이전으로</a>
+<a href="index.html" class="back-button">이전으로</a>
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="styles.css">
@@ -86,12 +86,16 @@
                 return;
             }
 
-            // 정렬: order 필드 기준 오름차순 (없으면 최신순)
+            // 정렬: 지정된 순서 우선, 순서가 없는 글은 오래된 글부터 표시
             posts.sort((a, b) => {
-                const orderA = a.order !== undefined ? a.order : Number.MAX_SAFE_INTEGER;
-                const orderB = b.order !== undefined ? b.order : Number.MAX_SAFE_INTEGER;
-                if (orderA !== orderB) return orderA - orderB;
-                return b.id.localeCompare(a.id);
+                const hasOrderA = a.order !== undefined;
+                const hasOrderB = b.order !== undefined;
+
+                if (hasOrderA && hasOrderB && a.order !== b.order) {
+                    return a.order - b.order;
+                }
+                if (hasOrderA !== hasOrderB) return hasOrderA ? -1 : 1;
+                return a.id.localeCompare(b.id);
             });
 
             // 페이지네이션 슬라이싱

@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="styles.css">
     <title>대외활동 내용 작성</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="firebase_config.js"></script>
     <script src="admin_key.js"></script>
@@ -26,6 +27,11 @@
         <label for="post-title">제목:</label><br>
         <input type="text" id="post-title" name="post-title"><br><br>
 
+        <label for="post-image">활동 사진 또는 PDF (선택):</label><br>
+        <input type="file" id="post-image" accept="image/*,.pdf"><br>
+        <img id="image-preview" alt="선택한 사진 미리보기" style="display: none; max-width: 100%; max-height: 300px; margin: 10px 0; object-fit: contain;">
+        <iframe id="pdf-preview" title="선택한 PDF 미리보기" style="display: none; width: 100%; height: 400px; margin: 10px 0; border: 1px solid #ddd;"></iframe><br>
+
         <label for="post-content">내용:</label><br>
         <textarea id="post-content" name="post-content" rows="10" cols="50"></textarea><br><br>
 
@@ -33,6 +39,36 @@
     </form>
 
     <script>
+        let imageBase64 = '';
+
+        document.getElementById('post-image').addEventListener('change', function() {
+            const file = this.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+                alert('이미지 또는 PDF 파일만 선택해주세요.');
+                this.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                imageBase64 = event.target.result;
+                const imagePreview = document.getElementById('image-preview');
+                const pdfPreview = document.getElementById('pdf-preview');
+                if (file.type === 'application/pdf') {
+                    pdfPreview.src = imageBase64;
+                    pdfPreview.style.display = 'block';
+                    imagePreview.style.display = 'none';
+                } else {
+                    imagePreview.src = imageBase64;
+                    imagePreview.style.display = 'block';
+                    pdfPreview.style.display = 'none';
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+
         document.getElementById('write-form').addEventListener('submit', function(event) {
             event.preventDefault();
             
@@ -41,11 +77,21 @@
             const date = new Date().toLocaleDateString();
 
             if (title && content) {
-                db.ref('posts').push({
-                    category: '대외활동',
-                    title: title,
-                    content: content,
-                    date: date
+                db.ref('posts').once('value').then(snapshot => {
+                    const data = snapshot.val() || {};
+                    const activityPosts = Object.values(data).filter(post => post.category === '대외활동');
+                    const lastOrder = activityPosts.reduce((maxOrder, post) => {
+                        return post.order !== undefined ? Math.max(maxOrder, Number(post.order)) : maxOrder;
+                    }, -1);
+
+                    return db.ref('posts').push({
+                        category: '대외활동',
+                        title: title,
+                        content: content,
+                        image: imageBase64,
+                        date: date,
+                        order: lastOrder + 1
+                    });
                 }).then(() => {
                     alert('대외활동 내용이 등록되었습니다.');
                     window.location.href = 'activities_board.html';
