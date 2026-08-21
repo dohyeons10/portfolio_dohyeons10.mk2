@@ -19,6 +19,10 @@
         <label for="post-title">제목:</label><br>
         <input type="text" id="post-title" name="post-title"><br><br>
 
+        <label for="post-image">활동 사진 (선택):</label><br>
+        <input type="file" id="post-image" accept="image/*"><br>
+        <img id="image-preview" alt="활동 사진 미리보기" style="display: none; max-width: 100%; max-height: 300px; margin: 10px 0; object-fit: contain;"><br>
+
         <label for="post-content">내용:</label><br>
         <textarea id="post-content" name="post-content" rows="10" cols="50"></textarea><br><br>
 
@@ -29,6 +33,27 @@
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
         let post = null;
+        let imageBase64 = '';
+
+        document.getElementById('post-image').addEventListener('change', function() {
+            const file = this.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                alert('이미지 파일만 선택해주세요.');
+                this.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                imageBase64 = event.target.result;
+                const preview = document.getElementById('image-preview');
+                preview.src = imageBase64;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
 
         // 기존 데이터 불러오기
         db.ref('posts/' + id).once('value').then((snapshot) => {
@@ -44,6 +69,12 @@
             if (isAdmin) {
                 document.getElementById('post-title').value = post.title;
                 document.getElementById('post-content').value = post.content;
+                imageBase64 = post.image || '';
+                if (imageBase64) {
+                    const preview = document.getElementById('image-preview');
+                    preview.src = imageBase64;
+                    preview.style.display = 'block';
+                }
             } else {
                 alert('관리자만 수정할 수 있습니다.');
                 window.location.href = `view.html?id=${id}`;
@@ -58,7 +89,8 @@
 
             db.ref('posts/' + id).update({
                 title: title,
-                content: content
+                content: content,
+                image: imageBase64
             }).then(() => {
                 alert('수정되었습니다.');
                 window.location.href = `view.html?id=${id}`; // 상세 페이지로 복귀
